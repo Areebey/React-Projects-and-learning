@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+
 
 function App() {
 
@@ -7,9 +8,9 @@ function App() {
   const [charAllowed, setcharAllowed] = useState(false);
   const[password, setPassword] = useState("");
 
+  const passwordRef = useRef(null);
 
   const passwordGenerator = useCallback(()=>{
-
     let pass = "";
     let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -17,34 +18,39 @@ function App() {
     if(charAllowed) str+= "@~#?-_+$£%^&!"
 
     for(let i=1; i <= length; i++){
-
       let char = Math.floor(Math.random()*str.length +1)
-      pass = str.charAt(char)
-
+      pass += str.charAt(char)
     }
-
     setPassword(pass)
-
-
   }, [length, numAllowed, charAllowed, setPassword])
+
+  const copyToClipboard = useCallback(()=>{
+    passwordRef.current?.select();
+    passwordRef.current?.setSelectionRange(0,100);
+    window.navigator.clipboard.writeText(password)
+  },[password])
+
+  useEffect(() => {
+    passwordGenerator()
+  } , [length, numAllowed, charAllowed, passwordGenerator])
 
   return (
     <>
-
-    <div className='w-full max-w-md mx-auto shadow-md rounded-lg px-4 my-8 text-orange-500 bg-gray-800'>
-    <h1 className='text-center text-white my-3' >Password Generator</h1>
+    <div className='w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-5 my-8 text-orange-500 bg-gray-800'>
+    <h1 className='text-center text-white mb-5' >Password Generator</h1>
       <div className='flex rounded-lg shadow mb-4 overflow-hidden'>
         <input
         type='text' 
         value={password}
         placeholder='Password'
-        className='outline-none rounded m-5 py-1 px-3 w-full'
+        className='outline-none py-1 px-3 w-full'
         readOnly
+        ref={passwordRef}
         />
         <button
-        className='outline-none bg-blue-600 text-white px-3 py-0.5 shrink-0'
+        onClick={copyToClipboard}
+        className='outline-none bg-blue-600 text-white px-3 py-0.5 shrink-0 hover:bg-blue-400' 
         >Copy</button>
-
       </div>
       <div className='flex text-sm gap-x-2'>
       <div className='flex  items-center gap-x-1'>
@@ -64,7 +70,6 @@ function App() {
         defaultChecked={numAllowed}
         className='cursor-pointer'
         onChange={()=>{setNumAllowed((prev)=> !prev);
-
         }}
         />
         <label>Numbers</label>
@@ -86,5 +91,3 @@ function App() {
 }
 
 export default App
-
-// 35min
